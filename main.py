@@ -1,21 +1,39 @@
 import tkinter as tk
 import tkinter.ttk as ttk
-from gui_operations import setup_gui
-from utils import initialize_queues, process_gui_updates, check_gui_queue
 import threading
+from gui_operations import setup_gui, select_source, select_destination, add_operation, start_copy, pause_resume_operations, restart_operations
+from utils import initialize_queues, process_gui_updates, check_gui_queue
 
 # Initialize queues and other variables
 initialize_queues()
 
-# GUI setup
+# Set up the UI
 root = tk.Tk()
-root.title("Folder Copier App")
+root.title("Folder Copier")
 
-frame, progress_bar, queue_listbox = setup_gui(root)
+# GUI setup
+frame, source_entry, destination_entry, queue_listbox, progress_bar, progress_label, progress_text, pause_button, restart_button, start_copy_button, add_operation_button, source_button, destination_button = setup_gui(root)
 
-# Start the GUI thread
-threading.Thread(target=process_gui_updates, daemon=True).start()
+def start_copy():
+    for source, destination in copy_operations:
+        if not source or not destination:
+            messagebox.showerror("Error", "Please select both a source and a destination directory.")
+            return
+        global files_copied, files_verified, progress
+        files_copied = 0
+        files_verified = 0
+        progress = 0
+        enqueue_copy_task(source, destination)
+        pause_button['text'] = 'Pause'
+        progress_bar['maximum'] = 100
 
-root.after(100, check_gui_queue)
+# Start the GUI update thread
+gui_update_thread = threading.Thread(target=process_gui_updates)
+gui_update_thread.daemon = True
+gui_update_thread.start()
 
+# Start checking the GUI queue
+root.after(1000, check_gui_queue)
+
+# Run the application
 root.mainloop()
