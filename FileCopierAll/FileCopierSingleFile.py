@@ -215,11 +215,24 @@ for i in range(4):   # Number of threads
     thread_pool.append(verify_thread)
 
 def pause_resume_operations():
-   pass
+    if pause_event.is_set():
+        pause_event.clear()
+        pause_button['text'] = 'Pause'
+        update_queue_listbox("Resumed operations")
+    else:
+        pause_event.set()
+        pause_button['text'] = 'Resume'
+        update_queue_listbox("Paused operations")
 
 def restart_operations():
-   pass
-
+    pause_event.clear()
+    reset_queue()
+    update_queue_listbox("Restarted operations")
+    for source, destination in copy_operations:
+        enqueue_copy_task(source, destination)
+    pause_button['text'] = 'Pause'
+    root.update()
+    
 def select_source():
     source = filedialog.askdirectory()
     source_entry.insert(0, source)
