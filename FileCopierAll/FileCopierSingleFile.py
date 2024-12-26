@@ -9,6 +9,7 @@ import blake3
 import threading
 import queue
 
+from File_Operations import count_files, hash_file, normalize_path
 
 # Queue to hold copy tasks
 copy_queue = queue.Queue()
@@ -27,10 +28,6 @@ def enqueue_copy_task(source, destination):
     except Exception as e:
         # Handle exceptions and update the GUI accordingly
         queue_listbox.insert(tk.END, f"Failed to queue: {source} to {destination} - {e}")
-
-
-def count_files(directory):
-    return sum([len(files) for r, d, files in os.walk(directory)])
 
 copy_operations = []
 total_files = 0
@@ -222,22 +219,6 @@ def pause_resume_operations():
 
 def restart_operations():
    pass
-
-def hash_file(path):
-    hasher = blake3.blake3()
-    with open(path, 'rb') as file:
-        while True:
-            chunk = file.read(8192)
-            if not chunk:
-                break
-            hasher.update(chunk)
-    return hasher.hexdigest()
-
-def normalize_path(file_path):
-    normalized_filename = unicodedata.normalize('NFKD', os.path.basename(file_path)).encode('ascii', 'ignore').decode('ascii')
-    # Get the path to the file
-    normalized_filepath = os.path.join(os.path.dirname(file_path), normalized_filename)
-    return normalized_filepath
 
 def select_source():
     source = filedialog.askdirectory()
