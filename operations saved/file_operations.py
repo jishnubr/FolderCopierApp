@@ -3,13 +3,23 @@ import shutil
 import time
 import threading
 import queue
-from tkinter import messagebox
+from tkinter import messagebox, Tk
 import blake3
 from utils import update_queue_listbox, hash_file, normalize_path
 
+root = Tk()
+
 copy_queue = queue.Queue()
 pause_event = threading.Event()
+pause_button = None  # Define pause_button
+restart_button = None  # Define restart_button
 verify_queue = queue.Queue()
+start_copy_button = None  # Define start_copy_button
+add_operation_button = None  # Define add_operation_button
+source_button = None  # Define source_button
+destination_button = None  # Define destination_button
+source_entry = None  # Define source_entry
+destination_entry = None  # Define destination_entry
 
 files_copied = 0
 files_verified = 0
@@ -111,11 +121,12 @@ def verify_copy(source, destination, progress_bar, progress_text):
         root.update()
     return True
 
-def worker():
+def worker(progress_bar, progress_label, progress_text):
     while True:
         source, destination = copy_queue.get()
         update_queue_listbox(f"Copying: {source} to {destination}")
         progress_bar['maximum'] = 100
+        progress_label.config(text="Copying:")
         try:
             if not os.path.exists(destination):
                 os.makedirs(destination)
@@ -133,7 +144,7 @@ def worker():
         finally:
             copy_queue.task_done()
 
-def verify_worker():
+def verify_worker(progress_bar, progress_text):
     while True:
         global files_copied
         task = verify_queue.get()

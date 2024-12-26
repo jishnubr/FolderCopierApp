@@ -1,7 +1,8 @@
 import tkinter as tk
 import tkinter.ttk as ttk
 import threading
-from gui_operations import setup_gui, select_source, select_destination, add_operation, start_copy, pause_resume_operations, restart_operations
+from tkinter import messagebox
+from gui_operations import setup_gui, select_source, select_destination, add_operation, start_copy, pause_resume_operations, restart_operations, enqueue_copy_task
 from utils import initialize_queues, process_gui_updates, check_gui_queue
 
 # Initialize queues and other variables
@@ -13,6 +14,9 @@ root.title("Folder Copier")
 
 # GUI setup
 frame, source_entry, destination_entry, queue_listbox, progress_bar, progress_label, progress_text, pause_button, restart_button, start_copy_button, add_operation_button, source_button, destination_button = setup_gui(root)
+
+# Define copy_operations
+copy_operations = []
 
 def start_copy():
     for source, destination in copy_operations:
