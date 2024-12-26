@@ -105,44 +105,6 @@ def add_operation():
     source_entry.delete(0, tk.END)
     destination_entry.delete(0, tk.END)
 
-
-
-
-
-def copy_files(source, destination, progress_bar, progress_label, progress_text):
-    global total_files, files_copied
-    progress_label.config(text="Copying:")
-    progress_label.grid(row=3, column=0, padx=10, pady=10)
-    last_update_time = time.time()
-    for foldername, subfolders, filenames in os.walk(source):
-        destination_folder = foldername.replace(source, destination)
-        if not os.path.exists(destination_folder):
-            os.makedirs(destination_folder)
-        for filename in filenames:
-            if pause_event.is_set():
-                update_queue_listbox(f"Paused: {source} to {destination}")
-                pause_event.wait()
-            shutil.copy2(os.path.join(foldername, filename), destination_folder)
-            files_copied += 1
-            progress = (files_copied / total_files) * 100
-            current_time = time.time()
-            if current_time - last_update_time >= 0.06:
-                progress_bar['value'] = progress
-                progress_text['text'] = f"{progress:.2f}%"
-                root.update()
-                last_update_time = current_time
-    progress_label.grid(row=3, column=0, padx=10, pady=10)
-progress_bar.grid(row=3, column=1, padx=10, pady=10)
-progress_text.grid(row=3, column=2, padx=10, pady=10)
-root.update()
-
-if files_copied == total_files:
-    progress_bar['value'] = 100
-    progress_text['text'] = f"{100:.2f}%"
-    verify_queue.put((source, destination))
-    progress_label.grid_remove()
-
-# Function to verify files
 def verify_copy(source, destination, progress_bar, progress_label, progress_text):
     global total_files, files_verified, progress
     progress_label.config(text="Verifying:")
@@ -188,33 +150,85 @@ def hash_file(filepath):
         hasher.update(buf)
     return hasher.hexdigest()
 
-
-
-
-
 def worker():
     while True:
-            source, destination = copy_queue.get()
-            copy_files(source, destination, progress_bar, progress_label, progress_text)
-            copy_queue.task_done()
+        source, destination = copy_queue.get()
+        copy_files(source, destination, progress_bar, progress_label, progress_text)
+        copy_queue.task_done()
+
 def verify_worker():
-        while True:
-            source, destination = verify_queue.get()
-            verify_files(source, destination)
-            verify_queue.task_done()
+    while True:
+        source, destination = verify_queue.get()
+        verify_files(source, destination)
+        verify_queue.task_done()
 
 def pause_resume_operations():
-        if pause_event.is_set():
-            pause_event.clear()
-            update_queue_listbox("Resuming operations")
-            pause_button['text'] = 'Pause'
-        else:
-            pause_event.set()
-            update_queue_listbox("Pausing operations")
-            pause_button['text'] = 'Resume'
+    if pause_event.is_set():
+        pause_event.clear()
+        update_queue_listbox("Resuming operations")
+        pause_button['text'] = 'Pause'
+    else:
+        pause_event.set()
+        update_queue_listbox("Pausing operations")
+        pause_button['text'] = 'Resume'
 
+def reset_queue():
+    global copy_queue, verify_queue, files_copied, files_verified, total_files, progress
+    copy_queue = queue.Queue()
+    verify_queue = queue.Queue()
+    files_copied = 0
+    files_verified = 0
+    total_files = 0
+    progress = 0
 
+def update_queue_listbox(message):
+    queue_listbox.insert(tk.END, message)
+    queue_listbox.yview(tk.END)
 
+def select_source():
+    source_path = filedialog.askdirectory()
+    if source_path:
+        source_entry.delete(0, tk.END)
+        source_entry.insert(0, source_path)
+
+def select_destination():
+    destination_path = filedialog.askdirectory()
+    if destination_path:
+        destination_entry.delete(0, tk.END)
+        destination_entry.insert(0, destination_path)
+
+def process_gui_updates():
+    while True:
+        message = gui_update_queue.get()
+        queue_listbox.insert(tk.END, message)
+        queue_listbox.yview(tk.END)
+        gui_update_queue.task_done()
+
+def check_gui_queue():
+    while not gui_update_queue.empty():
+        message = gui_update_queue.get()
+        queue_listbox.insert(tk.END, message)
+        queue_listbox.yview(tk.END)
+
+def start_copy():
+    for source, destination in copy_operations:
+        if not source or not destination:
+            messagebox.showerror("Error", "Please select both a source and a destination directory.")
+            return
+        global files_copied, files_verified, progress
+        files_copied = 0
+        files_verified = 0
+        progress = 0
+        enqueue_copy_task(source, destination)
+        pause_button['text'] = 'Pause'
+        progress_bar['maximum'] = 100
+
+def check_gui_queue():
+    while not gui_update_queue.empty():
+        message = gui_update_queue.get()
+        queue_listbox.insert(tk.END, message)
+        queue_listbox.yview(tk.END)
+    root.after(100, check_gui_queue)
 
 # GUI setup
 root = tk.Tk()
