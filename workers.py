@@ -53,9 +53,9 @@ def verify_copy(source, destination, progress_bar, progress_label, progress_text
 
     return all_verified
 
-def worker():
+def worker(progress_bar, progress_label, progress_text):
     while True:
-        source, destination = copy_queue.get()
+        source, destination, progress_bar, progress_label, progress_text = copy_queue.get()
         update_queue_listbox(f"Copying: {source} to {destination}")
         progress_bar['maximum'] = 100
         try:
@@ -75,9 +75,9 @@ def worker():
         finally:
             copy_queue.task_done()
 
-def verify_worker():
+def verify_worker(progress_bar, progress_label, progress_text):
     while True:
-        source, destination = verify_queue.get()
+        source, destination, progress_bar, progress_label, progress_text = verify_queue.get()
         progress_bar['maximum'] = 100
         try:
             copy_queue.join()
