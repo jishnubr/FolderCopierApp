@@ -1,0 +1,136 @@
+2024-12-31 23:20:11,275 - DEBUG - Adding operation from C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile to C:/Users/JISHNU B R/Downloads/Testning copy
+2024-12-31 23:20:11,276 - DEBUG - Counting files in directory: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile
+2024-12-31 23:20:11,276 - INFO - Counted 14 files in directory: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile
+2024-12-31 23:20:11,276 - INFO - Added operation: Copy from C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile to C:/Users/JISHNU B R/Downloads/Testning copy
+2024-12-31 23:20:12,044 - DEBUG - Counting files in directory: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile
+2024-12-31 23:20:12,044 - INFO - Counted 14 files in directory: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile
+2024-12-31 23:20:12,044 - DEBUG - Attempting to queue task: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile to C:/Users/JISHNU B R/Downloads/Testning copy
+2024-12-31 23:20:12,044 - INFO - Task queued: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile to C:/Users/JISHNU B R/Downloads/Testning copy
+2024-12-31 23:20:12,045 - DEBUG - Updating queue listbox with message: Copying: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile to C:/Users/JISHNU B R/Downloads/Testning copy
+2024-12-31 23:20:12,045 - INFO - Starting copy: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile to C:/Users/JISHNU B R/Downloads/Testning copy
+2024-12-31 23:20:12,045 - INFO - Started copying operations
+2024-12-31 23:20:12,045 - DEBUG - Starting copy from C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile to C:/Users/JISHNU B R/Downloads/Testning copy
+2024-12-31 23:20:12,060 - INFO - Copying completed: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile to C:/Users/JISHNU B R/Downloads/Testning copy
+2024-12-31 23:20:12,060 - INFO - Copy task completed: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile to C:/Users/JISHNU B R/Downloads/Testning copy
+2024-12-31 23:20:12,060 - INFO - All files copied. Verifying...
+2024-12-31 23:20:12,061 - DEBUG - Normalizing path: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\.data\.settings\org.eclipse.equinox.p2.artifact.repository.prefs
+2024-12-31 23:20:12,061 - INFO - Normalized path C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\.data\.settings\org.eclipse.equinox.p2.artifact.repository.prefs to C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\.data\.settings\org.eclipse.equinox.p2.artifact.repository.prefs
+2024-12-31 23:20:12,061 - DEBUG - Normalizing path: C:/Users/JISHNU B R/Downloads/Testning copy\.data\.settings\org.eclipse.equinox.p2.artifact.repository.prefs
+2024-12-31 23:20:12,061 - INFO - Normalized path C:/Users/JISHNU B R/Downloads/Testning copy\.data\.settings\org.eclipse.equinox.p2.artifact.repository.prefs to C:/Users/JISHNU B R/Downloads/Testning copy\.data\.settings\org.eclipse.equinox.p2.artifact.repository.prefs
+2024-12-31 23:20:12,061 - DEBUG - Hashing file: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\.data\.settings\org.eclipse.equinox.p2.artifact.repository.prefs
+2024-12-31 23:20:12,061 - INFO - Hashed file C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\.data\.settings\org.eclipse.equinox.p2.artifact.repository.prefs: 0e129eeacad7a1268501849fa4a49df006e98358b82ac7a1f23bcb64ebe58c20
+2024-12-31 23:20:12,061 - DEBUG - Hashing file: C:/Users/JISHNU B R/Downloads/Testning copy\.data\.settings\org.eclipse.equinox.p2.artifact.repository.prefs
+2024-12-31 23:20:12,062 - INFO - Hashed file C:/Users/JISHNU B R/Downloads/Testning copy\.data\.settings\org.eclipse.equinox.p2.artifact.repository.prefs: 0e129eeacad7a1268501849fa4a49df006e98358b82ac7a1f23bcb64ebe58c20
+2024-12-31 23:20:12,062 - DEBUG - Normalizing path: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\.data\.settings\org.eclipse.equinox.p2.engine.prefs
+2024-12-31 23:20:12,062 - INFO - Normalized path C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\.data\.settings\org.eclipse.equinox.p2.engine.prefs to C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\.data\.settings\org.eclipse.equinox.p2.engine.prefs
+2024-12-31 23:20:12,062 - DEBUG - Normalizing path: C:/Users/JISHNU B R/Downloads/Testning copy\.data\.settings\org.eclipse.equinox.p2.engine.prefs
+2024-12-31 23:20:12,062 - INFO - Normalized path C:/Users/JISHNU B R/Downloads/Testning copy\.data\.settings\org.eclipse.equinox.p2.engine.prefs to C:/Users/JISHNU B R/Downloads/Testning copy\.data\.settings\org.eclipse.equinox.p2.engine.prefs
+2024-12-31 23:20:12,062 - DEBUG - Hashing file: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\.data\.settings\org.eclipse.equinox.p2.engine.prefs
+2024-12-31 23:20:12,062 - INFO - Hashed file C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\.data\.settings\org.eclipse.equinox.p2.engine.prefs: 09a01593ada3ecb50cc14740991023bc15564487866c9e85dc7963eea7744e47
+2024-12-31 23:20:12,062 - DEBUG - Hashing file: C:/Users/JISHNU B R/Downloads/Testning copy\.data\.settings\org.eclipse.equinox.p2.engine.prefs
+2024-12-31 23:20:12,069 - INFO - Hashed file C:/Users/JISHNU B R/Downloads/Testning copy\.data\.settings\org.eclipse.equinox.p2.engine.prefs: 09a01593ada3ecb50cc14740991023bc15564487866c9e85dc7963eea7744e47
+2024-12-31 23:20:12,069 - DEBUG - Normalizing path: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\.data\.settings\org.eclipse.equinox.p2.metadata.repository.prefs
+2024-12-31 23:20:12,069 - INFO - Normalized path C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\.data\.settings\org.eclipse.equinox.p2.metadata.repository.prefs to C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\.data\.settings\org.eclipse.equinox.p2.metadata.repository.prefs
+2024-12-31 23:20:12,069 - DEBUG - Normalizing path: C:/Users/JISHNU B R/Downloads/Testning copy\.data\.settings\org.eclipse.equinox.p2.metadata.repository.prefs
+2024-12-31 23:20:12,069 - INFO - Normalized path C:/Users/JISHNU B R/Downloads/Testning copy\.data\.settings\org.eclipse.equinox.p2.metadata.repository.prefs to C:/Users/JISHNU B R/Downloads/Testning copy\.data\.settings\org.eclipse.equinox.p2.metadata.repository.prefs
+2024-12-31 23:20:12,069 - DEBUG - Hashing file: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\.data\.settings\org.eclipse.equinox.p2.metadata.repository.prefs
+2024-12-31 23:20:12,069 - INFO - Hashed file C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\.data\.settings\org.eclipse.equinox.p2.metadata.repository.prefs: c800e758a06cd260e21f96d3b14fd4f14cf442effd638a0bfa801ae16e97fcc2
+2024-12-31 23:20:12,069 - DEBUG - Hashing file: C:/Users/JISHNU B R/Downloads/Testning copy\.data\.settings\org.eclipse.equinox.p2.metadata.repository.prefs
+2024-12-31 23:20:12,077 - INFO - Hashed file C:/Users/JISHNU B R/Downloads/Testning copy\.data\.settings\org.eclipse.equinox.p2.metadata.repository.prefs: c800e758a06cd260e21f96d3b14fd4f14cf442effd638a0bfa801ae16e97fcc2
+2024-12-31 23:20:12,078 - INFO - Progress: 21.43% - Verified 3 out of 14 files.
+2024-12-31 23:20:12,078 - DEBUG - Normalizing path: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\.data\org.eclipse.equinox.internal.p2.touchpoint.eclipse.actions\jvmargs
+2024-12-31 23:20:12,078 - INFO - Normalized path C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\.data\org.eclipse.equinox.internal.p2.touchpoint.eclipse.actions\jvmargs to C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\.data\org.eclipse.equinox.internal.p2.touchpoint.eclipse.actions\jvmargs
+2024-12-31 23:20:12,078 - DEBUG - Normalizing path: C:/Users/JISHNU B R/Downloads/Testning copy\.data\org.eclipse.equinox.internal.p2.touchpoint.eclipse.actions\jvmargs
+2024-12-31 23:20:12,078 - INFO - Normalized path C:/Users/JISHNU B R/Downloads/Testning copy\.data\org.eclipse.equinox.internal.p2.touchpoint.eclipse.actions\jvmargs to C:/Users/JISHNU B R/Downloads/Testning copy\.data\org.eclipse.equinox.internal.p2.touchpoint.eclipse.actions\jvmargs
+2024-12-31 23:20:12,078 - DEBUG - Hashing file: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\.data\org.eclipse.equinox.internal.p2.touchpoint.eclipse.actions\jvmargs
+2024-12-31 23:20:12,078 - INFO - Hashed file C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\.data\org.eclipse.equinox.internal.p2.touchpoint.eclipse.actions\jvmargs: efa55f0cb216d8c09d7055321be7d8af5bda5fae1854f82c8d08020f224ac3e6
+2024-12-31 23:20:12,078 - DEBUG - Hashing file: C:/Users/JISHNU B R/Downloads/Testning copy\.data\org.eclipse.equinox.internal.p2.touchpoint.eclipse.actions\jvmargs
+2024-12-31 23:20:12,079 - INFO - Hashed file C:/Users/JISHNU B R/Downloads/Testning copy\.data\org.eclipse.equinox.internal.p2.touchpoint.eclipse.actions\jvmargs: efa55f0cb216d8c09d7055321be7d8af5bda5fae1854f82c8d08020f224ac3e6
+2024-12-31 23:20:12,080 - INFO - Progress: 28.57% - Verified 4 out of 14 files.
+2024-12-31 23:20:12,081 - INFO - Progress: 28.57% - Verified 4 out of 14 files.
+2024-12-31 23:20:12,081 - DEBUG - Normalizing path: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\.lock
+2024-12-31 23:20:12,081 - INFO - Normalized path C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\.lock to C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\.lock
+2024-12-31 23:20:12,081 - DEBUG - Normalizing path: C:/Users/JISHNU B R/Downloads/Testning copy\.lock
+2024-12-31 23:20:12,081 - INFO - Normalized path C:/Users/JISHNU B R/Downloads/Testning copy\.lock to C:/Users/JISHNU B R/Downloads/Testning copy\.lock
+2024-12-31 23:20:12,081 - DEBUG - Hashing file: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\.lock
+2024-12-31 23:20:12,081 - INFO - Hashed file C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\.lock: af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262
+2024-12-31 23:20:12,081 - DEBUG - Hashing file: C:/Users/JISHNU B R/Downloads/Testning copy\.lock
+2024-12-31 23:20:12,082 - INFO - Hashed file C:/Users/JISHNU B R/Downloads/Testning copy\.lock: af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262
+2024-12-31 23:20:12,082 - DEBUG - Normalizing path: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1709821979953.profile.gz
+2024-12-31 23:20:12,082 - INFO - Normalized path C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1709821979953.profile.gz to C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1709821979953.profile.gz
+2024-12-31 23:20:12,082 - DEBUG - Normalizing path: C:/Users/JISHNU B R/Downloads/Testning copy\1709821979953.profile.gz
+2024-12-31 23:20:12,082 - INFO - Normalized path C:/Users/JISHNU B R/Downloads/Testning copy\1709821979953.profile.gz to C:/Users/JISHNU B R/Downloads/Testning copy\1709821979953.profile.gz
+2024-12-31 23:20:12,082 - DEBUG - Hashing file: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1709821979953.profile.gz
+2024-12-31 23:20:12,082 - INFO - Hashed file C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1709821979953.profile.gz: 6a0a061e94452093fde8638ed775366987063ea7efe0107b37bb6b1df107b9d4
+2024-12-31 23:20:12,082 - DEBUG - Hashing file: C:/Users/JISHNU B R/Downloads/Testning copy\1709821979953.profile.gz
+2024-12-31 23:20:12,088 - INFO - Hashed file C:/Users/JISHNU B R/Downloads/Testning copy\1709821979953.profile.gz: 6a0a061e94452093fde8638ed775366987063ea7efe0107b37bb6b1df107b9d4
+2024-12-31 23:20:12,088 - DEBUG - Normalizing path: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1709821979969.profile.gz
+2024-12-31 23:20:12,088 - INFO - Normalized path C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1709821979969.profile.gz to C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1709821979969.profile.gz
+2024-12-31 23:20:12,088 - DEBUG - Normalizing path: C:/Users/JISHNU B R/Downloads/Testning copy\1709821979969.profile.gz
+2024-12-31 23:20:12,088 - INFO - Normalized path C:/Users/JISHNU B R/Downloads/Testning copy\1709821979969.profile.gz to C:/Users/JISHNU B R/Downloads/Testning copy\1709821979969.profile.gz
+2024-12-31 23:20:12,088 - DEBUG - Hashing file: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1709821979969.profile.gz
+2024-12-31 23:20:12,088 - INFO - Hashed file C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1709821979969.profile.gz: a377962dd5bbf9aee5e8c83d7ca080d585da674b6b98586d268fb5ef3b4d1a44
+2024-12-31 23:20:12,088 - DEBUG - Hashing file: C:/Users/JISHNU B R/Downloads/Testning copy\1709821979969.profile.gz
+2024-12-31 23:20:12,089 - INFO - Hashed file C:/Users/JISHNU B R/Downloads/Testning copy\1709821979969.profile.gz: a377962dd5bbf9aee5e8c83d7ca080d585da674b6b98586d268fb5ef3b4d1a44
+2024-12-31 23:20:12,089 - DEBUG - Normalizing path: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1709821995646.profile.gz
+2024-12-31 23:20:12,090 - INFO - Normalized path C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1709821995646.profile.gz to C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1709821995646.profile.gz
+2024-12-31 23:20:12,090 - DEBUG - Normalizing path: C:/Users/JISHNU B R/Downloads/Testning copy\1709821995646.profile.gz
+2024-12-31 23:20:12,090 - INFO - Normalized path C:/Users/JISHNU B R/Downloads/Testning copy\1709821995646.profile.gz to C:/Users/JISHNU B R/Downloads/Testning copy\1709821995646.profile.gz
+2024-12-31 23:20:12,090 - DEBUG - Hashing file: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1709821995646.profile.gz
+2024-12-31 23:20:12,090 - INFO - Hashed file C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1709821995646.profile.gz: 19dcdee5fbb1124bd0eeec35be45e642d8c0fd8e046e17775ea7a8ddb4940c99
+2024-12-31 23:20:12,090 - DEBUG - Hashing file: C:/Users/JISHNU B R/Downloads/Testning copy\1709821995646.profile.gz
+2024-12-31 23:20:12,096 - INFO - Hashed file C:/Users/JISHNU B R/Downloads/Testning copy\1709821995646.profile.gz: 19dcdee5fbb1124bd0eeec35be45e642d8c0fd8e046e17775ea7a8ddb4940c99
+2024-12-31 23:20:12,096 - DEBUG - Normalizing path: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1709821996427.profile.gz
+2024-12-31 23:20:12,096 - INFO - Normalized path C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1709821996427.profile.gz to C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1709821996427.profile.gz
+2024-12-31 23:20:12,096 - DEBUG - Normalizing path: C:/Users/JISHNU B R/Downloads/Testning copy\1709821996427.profile.gz
+2024-12-31 23:20:12,096 - INFO - Normalized path C:/Users/JISHNU B R/Downloads/Testning copy\1709821996427.profile.gz to C:/Users/JISHNU B R/Downloads/Testning copy\1709821996427.profile.gz
+2024-12-31 23:20:12,096 - DEBUG - Hashing file: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1709821996427.profile.gz
+2024-12-31 23:20:12,097 - INFO - Hashed file C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1709821996427.profile.gz: bccd3de7cb7858b881cb07af13b9904da3c7382f9ffa1f8f23a4ab07c4890eb1
+2024-12-31 23:20:12,097 - DEBUG - Hashing file: C:/Users/JISHNU B R/Downloads/Testning copy\1709821996427.profile.gz
+2024-12-31 23:20:12,103 - INFO - Hashed file C:/Users/JISHNU B R/Downloads/Testning copy\1709821996427.profile.gz: bccd3de7cb7858b881cb07af13b9904da3c7382f9ffa1f8f23a4ab07c4890eb1
+2024-12-31 23:20:12,103 - DEBUG - Normalizing path: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1709822072004.profile.gz
+2024-12-31 23:20:12,103 - INFO - Normalized path C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1709822072004.profile.gz to C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1709822072004.profile.gz
+2024-12-31 23:20:12,103 - DEBUG - Normalizing path: C:/Users/JISHNU B R/Downloads/Testning copy\1709822072004.profile.gz
+2024-12-31 23:20:12,103 - INFO - Normalized path C:/Users/JISHNU B R/Downloads/Testning copy\1709822072004.profile.gz to C:/Users/JISHNU B R/Downloads/Testning copy\1709822072004.profile.gz
+2024-12-31 23:20:12,103 - DEBUG - Hashing file: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1709822072004.profile.gz
+2024-12-31 23:20:12,103 - INFO - Hashed file C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1709822072004.profile.gz: c54a07c58a6a168dfb380e4c7823dc95c556e4a87a266f3bb547fefdbbd78aab
+2024-12-31 23:20:12,103 - DEBUG - Hashing file: C:/Users/JISHNU B R/Downloads/Testning copy\1709822072004.profile.gz
+2024-12-31 23:20:12,109 - INFO - Hashed file C:/Users/JISHNU B R/Downloads/Testning copy\1709822072004.profile.gz: c54a07c58a6a168dfb380e4c7823dc95c556e4a87a266f3bb547fefdbbd78aab
+2024-12-31 23:20:12,109 - DEBUG - Normalizing path: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1709822081361.profile.gz
+2024-12-31 23:20:12,109 - INFO - Normalized path C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1709822081361.profile.gz to C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1709822081361.profile.gz
+2024-12-31 23:20:12,109 - DEBUG - Normalizing path: C:/Users/JISHNU B R/Downloads/Testning copy\1709822081361.profile.gz
+2024-12-31 23:20:12,109 - INFO - Normalized path C:/Users/JISHNU B R/Downloads/Testning copy\1709822081361.profile.gz to C:/Users/JISHNU B R/Downloads/Testning copy\1709822081361.profile.gz
+2024-12-31 23:20:12,109 - DEBUG - Hashing file: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1709822081361.profile.gz
+2024-12-31 23:20:12,109 - INFO - Hashed file C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1709822081361.profile.gz: 58981a02c5055a4b9df4ecc94da900c068d94e59617526ae2869b3ead95a9b85
+2024-12-31 23:20:12,109 - DEBUG - Hashing file: C:/Users/JISHNU B R/Downloads/Testning copy\1709822081361.profile.gz
+2024-12-31 23:20:12,116 - INFO - Hashed file C:/Users/JISHNU B R/Downloads/Testning copy\1709822081361.profile.gz: 58981a02c5055a4b9df4ecc94da900c068d94e59617526ae2869b3ead95a9b85
+2024-12-31 23:20:12,116 - DEBUG - Normalizing path: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1709822082450.profile.gz
+2024-12-31 23:20:12,116 - INFO - Normalized path C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1709822082450.profile.gz to C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1709822082450.profile.gz
+2024-12-31 23:20:12,116 - DEBUG - Normalizing path: C:/Users/JISHNU B R/Downloads/Testning copy\1709822082450.profile.gz
+2024-12-31 23:20:12,116 - INFO - Normalized path C:/Users/JISHNU B R/Downloads/Testning copy\1709822082450.profile.gz to C:/Users/JISHNU B R/Downloads/Testning copy\1709822082450.profile.gz
+2024-12-31 23:20:12,116 - DEBUG - Hashing file: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1709822082450.profile.gz
+2024-12-31 23:20:12,116 - INFO - Hashed file C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1709822082450.profile.gz: 5641365563b599cff173aceb59a3d52c11296557adcbfc2b44e37c45e1a8cf97
+2024-12-31 23:20:12,116 - DEBUG - Hashing file: C:/Users/JISHNU B R/Downloads/Testning copy\1709822082450.profile.gz
+2024-12-31 23:20:12,122 - INFO - Hashed file C:/Users/JISHNU B R/Downloads/Testning copy\1709822082450.profile.gz: 5641365563b599cff173aceb59a3d52c11296557adcbfc2b44e37c45e1a8cf97
+2024-12-31 23:20:12,123 - INFO - Progress: 85.71% - Verified 12 out of 14 files.
+2024-12-31 23:20:12,123 - DEBUG - Normalizing path: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1710573765615.profile.gz
+2024-12-31 23:20:12,123 - INFO - Normalized path C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1710573765615.profile.gz to C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1710573765615.profile.gz
+2024-12-31 23:20:12,123 - DEBUG - Normalizing path: C:/Users/JISHNU B R/Downloads/Testning copy\1710573765615.profile.gz
+2024-12-31 23:20:12,123 - INFO - Normalized path C:/Users/JISHNU B R/Downloads/Testning copy\1710573765615.profile.gz to C:/Users/JISHNU B R/Downloads/Testning copy\1710573765615.profile.gz
+2024-12-31 23:20:12,123 - DEBUG - Hashing file: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1710573765615.profile.gz
+2024-12-31 23:20:12,123 - INFO - Hashed file C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1710573765615.profile.gz: f9dc2d42e283f03382ee0fa410019b38bcf5b8df392c32319e89abadcad1a560
+2024-12-31 23:20:12,123 - DEBUG - Hashing file: C:/Users/JISHNU B R/Downloads/Testning copy\1710573765615.profile.gz
+2024-12-31 23:20:12,129 - INFO - Hashed file C:/Users/JISHNU B R/Downloads/Testning copy\1710573765615.profile.gz: f9dc2d42e283f03382ee0fa410019b38bcf5b8df392c32319e89abadcad1a560
+2024-12-31 23:20:12,129 - DEBUG - Normalizing path: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1710573766255.profile.gz
+2024-12-31 23:20:12,129 - INFO - Normalized path C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1710573766255.profile.gz to C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1710573766255.profile.gz
+2024-12-31 23:20:12,129 - DEBUG - Normalizing path: C:/Users/JISHNU B R/Downloads/Testning copy\1710573766255.profile.gz
+2024-12-31 23:20:12,129 - INFO - Normalized path C:/Users/JISHNU B R/Downloads/Testning copy\1710573766255.profile.gz to C:/Users/JISHNU B R/Downloads/Testning copy\1710573766255.profile.gz
+2024-12-31 23:20:12,129 - DEBUG - Hashing file: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1710573766255.profile.gz
+2024-12-31 23:20:12,130 - INFO - Hashed file C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile\1710573766255.profile.gz: 071f8252349b2bbf9ffd92499a7018b69510780be1e5a2ed1a8865ea15c37019
+2024-12-31 23:20:12,130 - DEBUG - Hashing file: C:/Users/JISHNU B R/Downloads/Testning copy\1710573766255.profile.gz
+2024-12-31 23:20:12,136 - INFO - Hashed file C:/Users/JISHNU B R/Downloads/Testning copy\1710573766255.profile.gz: 071f8252349b2bbf9ffd92499a7018b69510780be1e5a2ed1a8865ea15c37019
+2024-12-31 23:20:12,137 - INFO - Progress: 100.00% - Verified 14 out of 14 files.
+2024-12-31 23:20:12,137 - DEBUG - Resetting queue and internal states
+2024-12-31 23:20:12,139 - INFO - Verification completed: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile to C:/Users/JISHNU B R/Downloads/Testning copy - All files verified successfully.
+2024-12-31 23:20:12,139 - DEBUG - Updating queue listbox with message: Completed: C:/Users/JISHNU B R/Downloads/Testning copy/dropins/org.eclipse.equinox.p2.core/DefaultProfile.profile to C:/Users/JISHNU B R/Downloads/Testning copy
+2024-12-31 23:20:12,139 - INFO - Copy operation completed successfully and all files verified.
