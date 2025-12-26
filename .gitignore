@@ -1,0 +1,18 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Logs
+*.log
+folder_copier_debug.log
+
+# Temporary / Saved reports
+operations saved/
+*.txt
+!requirements.txt
+!README.md
+
+# OS generated files
+.DS_Store
+Thumbs.db
