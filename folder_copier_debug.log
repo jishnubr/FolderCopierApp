@@ -1,0 +1,9 @@
+2025-12-27 00:48:53,666 [INFO] (MainThread) Spawned 2 new workers. Total: 2
+2025-12-27 00:49:26,807 [INFO] (MainThread) Task added: C:/Users/JISHNU B R/Downloads/Telegram Desktop/Dec 26
+2025-12-27 00:49:26,807 [INFO] (Scanner) Scanning structure: C:/Users/JISHNU B R/Downloads/Telegram Desktop/Dec 26
+2025-12-27 00:49:27,681 [INFO] (Monitor) Spawned 2 new workers. Total: 4
+2025-12-27 00:49:28,683 [INFO] (Monitor) Spawned 2 new workers. Total: 6
+2025-12-27 00:49:29,684 [INFO] (Monitor) Spawned 2 new workers. Total: 8
+2025-12-27 00:49:30,686 [INFO] (Monitor) Spawned 2 new workers. Total: 10
+2025-12-27 00:49:31,689 [INFO] (Monitor) Spawned 2 new workers. Total: 12
+2025-12-27 00:51:27,692 [INFO] (MainThread) Report saved to C:/Users/JISHNU B R/Documents/dumps/3 05  dec 24 2025 odl-portal-ui - Copy/diag_report_676.txt
