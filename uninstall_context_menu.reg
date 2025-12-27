@@ -1,0 +1,9 @@
+Windows Registry Editor Version 5.00
+
+; --- UNINSTALLATION SCRIPT ---
+
+; Note: Use the '-c' or key deletion syntax (REG DELETE) if strictly necessary, 
+; but for simple key removal in .reg files, deletion syntax is cleaner.
+
+; 1. Delete the Command Subkey and the Menu Entry Key recursively
+[-HKEY_CLASSES_ROOT\Directory\shell\FolderCopier]

@@ -24,6 +24,8 @@ class CopyExecutorController:
         """Submits a task to the manager."""
         self.manager.add_task(source, destination, op_type)
         self._ensure_worker_is_active()
+        # Initial metrics trigger
+        self._update_metrics()
 
     def start(self):
         """Starts processing if tasks are available."""
@@ -88,7 +90,7 @@ class CopyExecutorController:
                 
                 # Wait briefly before checking state again. This prevents busy-waiting while PAUSED.
                 self._update_metrics()
-                time.sleep(1.0) # 1-second refresh rate for metrics
+                time.sleep(0.1) # Faster refresh for monitoring loop
             else:
                 self._update_metrics()
                 time.sleep(0.5)
@@ -117,24 +119,27 @@ class CopyExecutorController:
         # Calculate rates
         if self.history_bytes:
             total_window_bytes = sum(h[1] for h in self.history_bytes)
-            avg_byte_rate = total_window_bytes / 3.0 # bytes/sec over 3s window
+            # Use actual elapsed time in window for more precision if window is smaller than 3s
+            window_duration = max(0.1, current_time - self.history_bytes[0][0])
+            avg_byte_rate = total_window_bytes / window_duration
         else:
             avg_byte_rate = 0
 
         if self.history_items:
             total_window_items = sum(h[1] for h in self.history_items)
-            avg_item_rate = total_window_items / 3.0 # items/sec over 3s window
+            window_duration = max(0.1, current_time - self.history_items[0][0])
+            avg_item_rate = total_window_items / window_duration
         else:
             avg_item_rate = 0
             
-        # Introspect ThreadPoolExecutor (Standard library internal access, but SRE-approved for metrics)
+        # Introspect ThreadPoolExecutor
+        active_threads = 0
         try:
+            # Re-calculating active threads based on internal futures if possible, 
+            # but for now, the executor._threads length is a decent SRE probe.
             active_threads = len(self.executor._threads)
-            # busy_threads is harder to get, but we can estimate or use counters if we had wrapped.
-            # For now, we'll report the number of threads currently managed by the executor.
-            # A more advanced SRE tool might use a wrapper to track precise busy time.
         except:
-            active_threads = 0
+            pass
 
         # Dispatch to GUI
         metrics = {

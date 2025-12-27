@@ -1,7 +1,9 @@
+import queue
+import os
+import shutil
 import threading
 import hashlib
 import time
-import queue
 
 class QueueManager:
     """
@@ -35,25 +37,47 @@ class QueueManager:
         return hashlib.sha256(data.encode('utf-8')).hexdigest()
 
     def add_task(self, source: str, destination: str, op_type: str = "COPY") -> tuple[bool, str]:
-        """Adds a task if it's not a duplicate."""
+        """Adds a task or a directory of tasks."""
+        if os.path.isdir(source):
+            return self._add_directory_task(source, destination, op_type)
+        return self._add_single_file_task(source, destination, op_type)
+
+    def _add_directory_task(self, source_dir: str, dest_dir: str, op_type: str) -> tuple[bool, str]:
+        """Explodes a directory into individual file tasks."""
+        count = 0
+        for root, dirs, files in os.walk(source_dir):
+            for file in files:
+                src_path = os.path.join(root, file)
+                rel_path = os.path.relpath(src_path, source_dir)
+                dst_path = os.path.join(dest_dir, rel_path)
+                self._add_single_file_task(src_path, dst_path, op_type)
+                count += 1
+        
+        msg = f"Queued directory: {source_dir} ({count} files)"
+        self.progress_channel.put(("LOG", msg))
+        return True, msg
+
+    def _add_single_file_task(self, source: str, destination: str, op_type: str) -> tuple[bool, str]:
+        """Adds a single file task if not duplicate."""
         fp = self._generate_fingerprint(source, destination, op_type)
 
         with self._lock:
             if fp in self.fingerprint_set:
-                # Idempotency check successful: Task already queued or processed
-                msg = f"Idempotent task skipped: {source} -> {destination}"
+                msg = f"Skipped (Idempotent): {os.path.basename(source)}"
                 self.progress_channel.put(("LOG", msg))
                 return False, msg
 
-            task_data = {"fp": fp, "source": source, "destination": destination, "type": op_type}
+            task_data = {
+                "fp": fp, 
+                "source": source, 
+                "destination": destination, 
+                "type": op_type,
+                "size": os.path.getsize(source) if os.path.exists(source) else 0
+            }
             self.task_queue.put(task_data)
             self.fingerprint_set.add(fp)
             self.progress_channel.put(("QUEUE_UPDATE", len(self.task_queue.queue)))
-            msg = f"Task added: {source}"
-            self.progress_channel.put(("LOG", msg))
-
-            # If currently IDLE and a task is added, we remain IDLE as per design (no auto-start)
-            return True, msg
+            return True, "Task added"
 
     def pause(self) -> bool:
         """Transitions state to PAUSED, respecting transition rules."""
@@ -145,41 +169,42 @@ class QueueManager:
 # --- Worker Function (Simulating CopyManager Refactor) ---
 
 def worker_thread_task(manager: QueueManager):
-    """The main loop executed by each worker thread."""
+    """The main loop executed by each worker thread using REAL file operations."""
     while True:
         task = manager.get_next_task()
 
         if task is None:
-            # Queue empty, worker terminates naturally if we exit the loop
             if manager.state == manager.STATE_IDLE:
                 break
-            # If state is RUNNING but queue just became empty, it will transition to IDLE on the next check.
-            time.sleep(0.1) # Yield while checking state transition
+            time.sleep(0.1)
             continue
 
         if task == "PAUSE_BLOCKER":
-            time.sleep(0.1) # Yield execution while paused
+            time.sleep(0.1)
             continue
 
-        # --- Actual Work Execution ---
-        
+        # --- Actual Production-Grade Execution ---
         fp = task['fp']
+        src = task['source']
+        dst = task['destination']
+        size = task.get('size', 0)
+        t_name = threading.current_thread().name
         
-        manager.progress_channel.put(("OP_START", (fp, 1, 0))) # Notify start: current item, total progress=0/1 (placeholder)
-        
-        # Simulate intensive file operation (IO Bound simulation)
-        print(f"[Worker] Processing {task['source']}...")
-        simulated_size = 10 * 1024 * 1024 # 10MB
-        time.sleep(1.0) # Simulating work
-
-        # Simulate granular progress reporting (optional, but good practice)
-        manager.progress_channel.put(("OP_PROGRESS", (50, 100)))
-        time.sleep(1.0)
-        
-        print(f"[Worker] Finished {task['source']}")
-        manager.progress_channel.put(("OP_PROGRESS", (100, 100)))
-        
-        # Signal completion back to the manager (which handles state transitions)
-        manager.task_complete(fp, bytes_count=simulated_size)
-        
-        # After completion, the loop immediately checks for the next task/state
+        try:
+            manager.progress_channel.put(("OP_START", (fp, src, t_name))) # Pass thread name
+            
+            # Ensure destination directory exists
+            os.makedirs(os.path.dirname(dst), exist_ok=True)
+            
+            # Perform actual copy
+            shutil.copy2(src, dst)
+            
+            manager.progress_channel.put(("OP_PROGRESS", (fp, 100, t_name))) 
+            manager.task_complete(fp, bytes_count=size)
+            
+        except Exception as e:
+            err_msg = f"ERROR copying {os.path.basename(src)}: {e}"
+            manager.progress_channel.put(("LOG", err_msg))
+            # Even on failure, we mark task as done to avoid hanging the queue
+            # (In SRE, we might retry, but here we log and continue)
+            manager.task_complete(fp, bytes_count=0)

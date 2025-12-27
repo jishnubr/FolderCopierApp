@@ -273,14 +273,40 @@ class FolderCopierApp:
             self.lbl_items_sec.config(text=f"Items: {data['item_rate']:.1f}/s")
             self.lbl_threads.config(text=f"Threads: {data['active_threads']}/{data['total_threads']}")
             
-            # Update Treeview with real thread usage
-            self.tree.delete(*self.tree.get_children())
-            for i in range(data['active_threads']):
-                self.tree.insert("", "end", values=(f"Thread-{i+1}", "ACTIVE", "Processing..."))
-            for i in range(data['active_threads'], data['total_threads']):
-                self.tree.insert("", "end", values=(f"Thread-{i+1}", "IDLE", "--"))
+            # Ensure thread rows exist (run once or as threads scale)
+            total_slots = data['total_threads']
+            for i in range(total_slots):
+                row_id = f"row_{i}"
+                if not self.tree.exists(row_id):
+                    self.tree.insert("", "end", iid=row_id, values=(f"Thread-{i+1}", "IDLE", "--"))
+
+        elif msg_type == 'OP_START':
+            fp, src_path, t_name = data
+            basename = os.path.basename(src_path)
+            # Find the row corresponding to this thread name, or just use a round-robin if names don't match
+            # For simplicity, we'll map Thread-X to row_X-1
+            try:
+                # ThreadPoolExecutor names are usually "ThreadPoolExecutor-0_0", "ThreadPoolExecutor-0_1"
+                t_idx = int(t_name.split('_')[-1]) % self.queue_manager.task_queue.maxsize if '_' in t_name else 0 # fallback
+                # Actually, better to just look for the first IDLE row or match by Thread-X ID
+                for i in range(4): # max_workers
+                    row_id = f"row_{i}"
+                    vals = list(self.tree.item(row_id)['values'])
+                    if vals[1] == "IDLE":
+                        self.tree.item(row_id, values=(f"Worker {i+1}", "ACTIVE", f"Copying {basename}"))
+                        break
+            except: pass
 
         elif msg_type == 'OP_PROGRESS':
+            # Simplified progress for small files
+            pass
+
+        elif msg_type == 'TASK_DONE':
+            # Reset the row to IDLE when task completes
+            # (Note: we don't have thread name here easily, so we rely on METRICS_UPDATE to sweep/reset)
+            pass
+
+        elif msg_type == 'OP_PROGRESS': # Original handler if needed for main progress
             if data[1] > 0:
                 pct = (data[0] / data[1]) * 100
                 self.main_progress['value'] = pct

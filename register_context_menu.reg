@@ -1,0 +1,14 @@
+Windows Registry Editor Version 5.00
+
+; --- INSTALLATION SCRIPT ---
+
+; 1. Create the Menu Entry Key and Set Display Text
+; This key defines the context menu item that appears when right-clicking a directory.
+[HKEY_CLASSES_ROOT\Directory\shell\FolderCopier]
+@="Copy with FolderCopier"
+
+; 2. Create the Command Subkey
+; This key defines the action executed when the menu item is clicked.
+; "%1" is the placeholder for the path of the folder that was right-clicked.
+[HKEY_CLASSES_ROOT\Directory\shell\FolderCopier\command]
+@="\"C:\\Tools\\FolderCopier.exe\" \"%1\""

@@ -1,78 +1,39 @@
 import logging
-import platform
 import sys
-import os
-import datetime
 
-# Configure Logging
-log_file = "folder_copier_debug.log"
+def setup_logger():
+    """Sets up the primary application logger for runtime debugging and errors."""
+    logger = logging.getLogger('AppRuntime')
+    logger.setLevel(logging.DEBUG)
 
-# Custom handler to keep last 20 records in memory
-class MemoryHandler(logging.Handler):
-    def __init__(self, capacity=20):
-        super().__init__()
-        self.capacity = capacity
-        self.records = []
+    # Prevent propagation if this logger is imported into a system that already has handlers configured
+    logger.propagate = False
+    if logger.hasHandlers():
+        return logger
 
-    def emit(self, record):
-        self.records.append(self.format(record))
-        if len(self.records) > self.capacity:
-            self.records.pop(0)
+    # 1. Console Handler (StreamHandler) - Outputs INFO and above to stderr
+    ch = logging.StreamHandler(sys.stderr)
+    ch.setLevel(logging.INFO)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
 
-memory_handler = MemoryHandler()
-memory_handler.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s] %(message)s'))
+    # 2. File Handler (For detailed debugging, simulating a local debug log file)
+    fh = logging.FileHandler('runtime_debug.log')
+    fh.setLevel(logging.DEBUG)
+    fh.setFormatter(formatter)
+    logger.addHandler(fh)
 
-logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s [%(levelname)s] (%(threadName)s) %(message)s',
-    handlers=[
-        logging.FileHandler(log_file, mode='w'),
-        logging.StreamHandler(sys.stdout),
-        memory_handler
-    ]
-)
+    return logger
 
-logger = logging.getLogger("FolderCopier")
+# Initialize and export the default logger instance
+logger = setup_logger()
 
-def get_system_info():
-    """Returns basic system info for debugging context."""
-    return {
-        "OS": platform.system(),
-        "OS Version": platform.version(),
-        "Python Version": sys.version.split()[0],
-        "Architecture": platform.machine(),
-        "CPUs": os.cpu_count()
-    }
-
-def generate_report_content(copy_manager):
-    """
-    Creates a human-readable summary of the current session.
-    """
-    info = get_system_info()
-    
-    report = []
-    report.append("="*40)
-    report.append("  FOLDER COPIER - DIAGNOSTIC REPORT")
-    report.append("="*40)
-    report.append(f"Date: {datetime.datetime.now()}")
-    report.append("")
-    
-    report.append("--- SYSTEM INFORMATION ---")
-    for k, v in info.items():
-        report.append(f"{k}: {v}")
-    report.append("")
-    
-    report.append("--- SESSION STATISTICS ---")
-    report.append(f"Total Files Queued: {copy_manager.total_files}")
-    report.append(f"Files Copied: {copy_manager.files_copied_count}")
-    report.append(f"Total Bytes Processed: {copy_manager.bytes_copied}")
-    report.append(f"Active Threads: {len(copy_manager.threads)}")
-    report.append("")
-    
-    report.append("--- RECENT ERRORS / ACTIVITY (Last 20) ---")
-    if memory_handler.records:
-        report.extend(memory_handler.records)
-    else:
-        report.append("No logs captured yet.")
-    
-    return "\n".join(report)
+if __name__ == '__main__':
+    # Example usage if run directly
+    logger.debug("App Logger: Debug message.")
+    logger.info("App Logger: Application started successfully.")
+    try:
+        1 / 0
+    except ZeroDivisionError:
+        logger.error("App Logger: Encountered an unexpected division by zero error.", exc_info=True)
