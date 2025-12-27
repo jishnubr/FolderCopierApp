@@ -169,10 +169,10 @@ class FolderCopierApp:
         self.stats_frame.grid(row=1, column=0, columnspan=2, sticky='ew')
         for i in range(4): self.stats_frame.columnconfigure(i, weight=1)
         
-        self.lbl_speed = ttk.Label(self.stats_frame, text="Speed: 0 B/s", style="Stat.TLabel")
+        self.lbl_speed = ttk.Label(self.stats_frame, text="Throughput: 0 B/s", style="Stat.TLabel")
         self.lbl_speed.grid(row=0, column=0)
         
-        self.lbl_items_sec = ttk.Label(self.stats_frame, text="Items: 0.0/s", style="Stat.TLabel")
+        self.lbl_items_sec = ttk.Label(self.stats_frame, text="File Rate: 0.0/s", style="Stat.TLabel")
         self.lbl_items_sec.grid(row=0, column=1)
         
         self.lbl_threads = ttk.Label(self.stats_frame, text="Threads: 0/4", style="Stat.TLabel")
@@ -255,9 +255,19 @@ class FolderCopierApp:
             self._log('COMMAND: System Paused')
 
     def _monitor_backend(self):
+        last_ui_update = 0
+        UI_UPDATE_INTERVAL = 0.1 # 10Hz throttling
         while self.is_monitoring:
             try:
-                msg_type, data = self.queue_manager.progress_channel.get(timeout=0.1)
+                msg_type, data = self.queue_manager.progress_channel.get(timeout=0.05)
+                
+                # SRE Optimization: Throttle UI-intensive messages (METRICS, PROGRESS)
+                current_time = time.time()
+                if msg_type in ['METRICS_UPDATE', 'OP_PROGRESS', 'CHUNK_DONE']:
+                    if current_time - last_ui_update < UI_UPDATE_INTERVAL:
+                        continue
+                    last_ui_update = current_time
+                
                 self.root.after(0, self._process_backend_message, msg_type, data)
             except queue.Empty:
                 continue
@@ -269,8 +279,8 @@ class FolderCopierApp:
             self.pause_btn.config(text='RESUME SYSTEM' if data == 'PAUSED' else 'PAUSE SYSTEM')
             self._log(f"STATE: {data}")
         elif msg_type == 'METRICS_UPDATE':
-            self.lbl_speed.config(text=f"Speed: {format_bytes(data['byte_rate'])}/s")
-            self.lbl_items_sec.config(text=f"Items: {data['item_rate']:.1f}/s")
+            self.lbl_speed.config(text=f"Throughput: {format_bytes(data['byte_rate'])}/s")
+            self.lbl_items_sec.config(text=f"File Rate: {data['item_rate']:.1f}/s")
             self.lbl_threads.config(text=f"Threads: {data['active_threads']}/{data['total_threads']}")
             
             # Ensure thread rows exist (run once or as threads scale)

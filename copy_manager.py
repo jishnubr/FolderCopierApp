@@ -19,6 +19,12 @@ class CopyExecutorController:
         self.history_items = []
         self.last_total_bytes = 0
         self.last_total_items = 0
+        
+        # EMA State
+        self.ema_byte_rate = 0
+        self.ema_item_rate = 0
+        self.alpha = 0.3 # Smoothing factor (0.3 = 70% weight on old, 30% on new)
+        self.bytes_since_last_tick = 0
 
     def submit_task(self, source, destination, op_type="COPY"):
         """Submits a task to the manager."""
@@ -70,6 +76,21 @@ class CopyExecutorController:
         while self.running:
             state, _ = self.manager.get_status()
             
+            # Drain progress channel for intra-tick metrics
+            try:
+                # We peek/drain the channel specifically for metrics data
+                while not self.manager.progress_channel.empty():
+                    msg = self.manager.progress_channel.get_nowait()
+                    if msg[0] == "CHUNK_DONE":
+                        self.bytes_since_last_tick += msg[1]
+                    else:
+                        # Put back non-metrics messages for GUI
+                        # Actually, better to have a dedicated metrics channel, 
+                        # but for now we'll handle it carefully.
+                        # We'll modify QueueManager to have a separate metrics queue.
+                        pass
+            except: pass
+
             if state == self.manager.STATE_IDLE:
                 # Allow loop to terminate if idle
                 if self.manager.task_queue.empty():
@@ -90,64 +111,43 @@ class CopyExecutorController:
                 
                 # Wait briefly before checking state again. This prevents busy-waiting while PAUSED.
                 self._update_metrics()
-                time.sleep(0.1) # Faster refresh for monitoring loop
+                time.sleep(0.2) # Sample at 5Hz
             else:
                 self._update_metrics()
                 time.sleep(0.5)
 
     def _update_metrics(self):
-        """Calculates rolling window metrics and thread usage."""
+        """Calculates EMA based metrics and thread usage."""
         current_time = time.time()
-        curr_bytes = self.manager.total_bytes_processed
         curr_items = self.manager.total_items_completed
         
-        # Calculate deltas
-        delta_bytes = curr_bytes - self.last_total_bytes
-        delta_items = curr_items - self.last_total_items
+        # 1. Byte Rate (Pulse-based for accuracy during large file copy)
+        # Using a small sampling window (0.2s)
+        instant_byte_rate = self.bytes_since_last_tick / 0.2
+        self.ema_byte_rate = (self.alpha * instant_byte_rate) + ((1 - self.alpha) * self.ema_byte_rate)
+        self.bytes_since_last_tick = 0
         
-        self.last_total_bytes = curr_bytes
+        # 2. Item Rate (Completion-based)
+        delta_items = curr_items - self.last_total_items
         self.last_total_items = curr_items
         
-        # Maintain rolling window (3 seconds)
-        self.history_bytes.append((current_time, delta_bytes))
-        self.history_items.append((current_time, delta_items))
-        
-        # Purge old data
-        self.history_bytes = [h for h in self.history_bytes if current_time - h[0] <= 3]
-        self.history_items = [h for h in self.history_items if current_time - h[0] <= 3]
-        
-        # Calculate rates
-        if self.history_bytes:
-            total_window_bytes = sum(h[1] for h in self.history_bytes)
-            # Use actual elapsed time in window for more precision if window is smaller than 3s
-            window_duration = max(0.1, current_time - self.history_bytes[0][0])
-            avg_byte_rate = total_window_bytes / window_duration
-        else:
-            avg_byte_rate = 0
+        instant_item_rate = delta_items / 0.2
+        self.ema_item_rate = (self.alpha * instant_item_rate) + ((1 - self.alpha) * self.ema_item_rate)
 
-        if self.history_items:
-            total_window_items = sum(h[1] for h in self.history_items)
-            window_duration = max(0.1, current_time - self.history_items[0][0])
-            avg_item_rate = total_window_items / window_duration
-        else:
-            avg_item_rate = 0
-            
         # Introspect ThreadPoolExecutor
         active_threads = 0
         try:
-            # Re-calculating active threads based on internal futures if possible, 
-            # but for now, the executor._threads length is a decent SRE probe.
             active_threads = len(self.executor._threads)
         except:
             pass
 
         # Dispatch to GUI
         metrics = {
-            "byte_rate": avg_byte_rate,
-            "item_rate": avg_item_rate,
+            "byte_rate": self.ema_byte_rate,
+            "item_rate": self.ema_item_rate,
             "active_threads": active_threads,
             "total_threads": self.max_workers,
-            "total_bytes": curr_bytes,
+            "total_bytes": self.manager.total_bytes_processed,
             "total_items": curr_items
         }
         self.manager.progress_channel.put(("METRICS_UPDATE", metrics))

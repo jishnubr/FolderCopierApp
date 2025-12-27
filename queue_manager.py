@@ -32,9 +32,14 @@ class QueueManager:
         self.total_items_completed = 0
 
     def _generate_fingerprint(self, source: str, destination: str, op_type: str) -> str:
-        """Generates a deterministic hash for an operation."""
-        data = f"{source}|{destination}|{op_type}"
-        return hashlib.sha256(data.encode('utf-8')).hexdigest()
+        """Generates a tiered fingerprint for an operation."""
+        # Tier 1: Stat-based identity
+        try:
+            st = os.stat(source)
+            stat_data = f"{source}|{st.st_size}|{st.st_mtime}|{destination}|{op_type}"
+            return hashlib.sha256(stat_data.encode('utf-8')).hexdigest()
+        except:
+            return hashlib.sha256(f"{source}|{destination}".encode('utf-8')).hexdigest()
 
     def add_task(self, source: str, destination: str, op_type: str = "COPY") -> tuple[bool, str]:
         """Adds a task or a directory of tasks."""
@@ -169,7 +174,8 @@ class QueueManager:
 # --- Worker Function (Simulating CopyManager Refactor) ---
 
 def worker_thread_task(manager: QueueManager):
-    """The main loop executed by each worker thread using REAL file operations."""
+    """The main loop executed by each worker thread using ATOMIC CHUNKED file operations."""
+    CHUNK_SIZE = 64 * 1024 # 64KB
     while True:
         task = manager.get_next_task()
 
@@ -183,28 +189,61 @@ def worker_thread_task(manager: QueueManager):
             time.sleep(0.1)
             continue
 
-        # --- Actual Production-Grade Execution ---
+        # --- High-Integrity Production Copy ---
         fp = task['fp']
         src = task['source']
         dst = task['destination']
-        size = task.get('size', 0)
         t_name = threading.current_thread().name
         
         try:
-            manager.progress_channel.put(("OP_START", (fp, src, t_name))) # Pass thread name
+            # 1. TOCTOU & Reality Check
+            if not os.path.exists(src):
+                raise FileNotFoundError(f"Source disappeared: {src}")
             
-            # Ensure destination directory exists
+            st = os.stat(src)
+            actual_size = st.st_size
+            
+            manager.progress_channel.put(("OP_START", (fp, src, t_name)))
+            
+            # 2. Atomic Target Preparation
             os.makedirs(os.path.dirname(dst), exist_ok=True)
+            tmp_dst = dst + f".{hash(t_name)}.tmp"
             
-            # Perform actual copy
-            shutil.copy2(src, dst)
+            # 3. Chunked Copy for Real-Time Metrics
+            bytes_written = 0
+            with open(src, 'rb') as fsrc, open(tmp_dst, 'wb') as fdst:
+                while True:
+                    # Check for pause/stop mid-copy
+                    if manager.get_state() == manager.STATE_PAUSED:
+                        time.sleep(0.2)
+                        continue
+                    
+                    chunk = fsrc.read(CHUNK_SIZE)
+                    if not chunk:
+                        break
+                    fdst.write(chunk)
+                    bytes_written += len(chunk)
+                    
+                    # Update metrics per-chunk (Backend)
+                    # We pass incremental bytes to task_complete or a specific metrics hook
+                    # For simplicity, we'll pulse the progress channel
+                    manager.progress_channel.put(("CHUNK_DONE", len(chunk)))
+
+            # 4. Atomic Commit & Validation
+            if bytes_written != actual_size:
+                raise IOError(f"Size mismatch: {bytes_written}/{actual_size}")
+            
+            # Set metadata before rename (emulate shutil.copy2)
+            shutil.copystat(src, tmp_dst)
+            os.replace(tmp_dst, dst)
             
             manager.progress_channel.put(("OP_PROGRESS", (fp, 100, t_name))) 
-            manager.task_complete(fp, bytes_count=size)
+            manager.task_complete(fp, bytes_count=0) # Bytes already pulsed via CHUNK_DONE
             
         except Exception as e:
             err_msg = f"ERROR copying {os.path.basename(src)}: {e}"
             manager.progress_channel.put(("LOG", err_msg))
-            # Even on failure, we mark task as done to avoid hanging the queue
-            # (In SRE, we might retry, but here we log and continue)
+            if 'tmp_dst' in locals() and os.path.exists(tmp_dst):
+                try: os.remove(tmp_dst)
+                except: pass
             manager.task_complete(fp, bytes_count=0)
