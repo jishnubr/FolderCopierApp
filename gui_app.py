@@ -1,261 +1,305 @@
 import tkinter as tk
-from tkinter import filedialog, messagebox, ttk
+from tkinter import ttk, filedialog, messagebox
 import threading
+import time
 import queue
+import sys
 import os
-from utils import count_files, format_bytes, format_time
-from copy_manager import CopyManager
-from app_logger import generate_report_content, logger
 
-class FolderCopierApp:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Folder Copier Pro")
-        self.root.geometry("900x700")
-        self.root.minsize(800, 600)
-        
-        # Colors & Theme
-        self.bg_color = "#1e1e1e"  # Dark Charcoal
-        self.fg_color = "#e0e0e0"  # Soft White
-        self.accent_color = "#007acc" # Modern Blue
-        self.btn_bg = "#333333"
-        self.btn_fg = "#ffffff"
-        
-        self.root.configure(bg=self.bg_color)
-        
-        # Initialize Styles
-        self.setup_styles()
-        
-        self.gui_queue = queue.Queue()
-        self.manager = CopyManager(update_callback=self.handle_manager_update)
-        
-        # Map worker_id -> Treeview item_id for fast updates
-        self.worker_to_item = {}
-        
-        self.setup_ui()
-        self.root.after(100, self.process_gui_queue)
+from queue_manager import QueueManager
+from copy_manager import CopyExecutorController
+from app_logger import logger
+from utils import format_bytes, format_time
 
-    def setup_styles(self):
+class ThemeManager:
+    """Declarative theme definition for the application."""
+    THEMES = {
+        "Midnight (Dark)": {
+            "bg": "#1e1e1e",
+            "fg": "#e0e0e0",
+            "accent": "#007acc",
+            "btn_bg": "#333333",
+            "btn_fg": "#ffffff",
+            "field_bg": "#2d2d2d",
+            "field_fg": "#e0e0e0",
+            "tree_bg": "#2d2d2d",
+            "tree_fg": "#e0e0e0",
+            "tree_heading_bg": "#333333",
+            "tree_select": "#007acc"
+        },
+        "Frost (Light)": {
+            "bg": "#f5f5f7",
+            "fg": "#1d1d1f",
+            "accent": "#0071e3",
+            "btn_bg": "#e5e5e7",
+            "btn_fg": "#1d1d1f",
+            "field_bg": "#ffffff",
+            "field_fg": "#1d1d1f",
+            "tree_bg": "#ffffff",
+            "tree_fg": "#1d1d1f",
+            "tree_heading_bg": "#f2f2f2",
+            "tree_select": "#0071e3"
+        },
+        "Abyss (Ocean)": {
+            "bg": "#0b192e",
+            "fg": "#8fb3ff",
+            "accent": "#00d2ff",
+            "btn_bg": "#1a2a44",
+            "btn_fg": "#8fb3ff",
+            "field_bg": "#152a4e",
+            "field_fg": "#8fb3ff",
+            "tree_bg": "#152a4e",
+            "tree_fg": "#8fb3ff",
+            "tree_heading_bg": "#1a2a44",
+            "tree_select": "#00d2ff"
+        },
+        "Matrix (Neon)": {
+            "bg": "#000000",
+            "fg": "#00ff41",
+            "accent": "#00ff41",
+            "btn_bg": "#003b00",
+            "btn_fg": "#00ff41",
+            "field_bg": "#000000",
+            "field_fg": "#00ff41",
+            "tree_bg": "#000000",
+            "tree_fg": "#00ff41",
+            "tree_heading_bg": "#003b00",
+            "tree_select": "#00ff41"
+        }
+    }
+
+    @staticmethod
+    def apply_theme(root, theme_name):
+        colors = ThemeManager.THEMES.get(theme_name, ThemeManager.THEMES["Midnight (Dark)"])
+        root.configure(bg=colors["bg"])
+        
         style = ttk.Style()
         style.theme_use('clam')
         
-        # Configure Frame
-        style.configure("TFrame", background=self.bg_color)
-        style.configure("TLabelframe", background=self.bg_color, foreground=self.fg_color, font=("Segoe UI", 10, "bold"))
-        style.configure("TLabelframe.Label", background=self.bg_color, foreground=self.fg_color)
+        # Base styles
+        style.configure("TFrame", background=colors["bg"])
+        style.configure("TLabelframe", background=colors["bg"], foreground=colors["fg"], font=("Segoe UI", 10, "bold"))
+        style.configure("TLabelframe.Label", background=colors["bg"], foreground=colors["fg"])
+        style.configure("TLabel", background=colors["bg"], foreground=colors["fg"], font=("Segoe UI", 10))
+        style.configure("Header.TLabel", font=("Segoe UI", 16, "bold"), foreground=colors["accent"])
+        style.configure("Stat.TLabel", font=("Segoe UI", 11, "bold"), foreground=colors["accent"])
         
-        # Configure Labels
-        style.configure("TLabel", background=self.bg_color, foreground=self.fg_color, font=("Segoe UI", 10))
-        style.configure("Header.TLabel", font=("Segoe UI", 14, "bold"), foreground=self.accent_color)
+        style.configure("TEntry", fieldbackground=colors["field_bg"], foreground=colors["field_fg"], insertcolor=colors["fg"])
         
-        # Configure Entry
-        style.configure("TEntry", fieldbackground="#2d2d2d", foreground=self.fg_color, insertcolor="white")
-        
-        # Configure Buttons
         style.configure("TButton", padding=5, font=("Segoe UI", 10))
         style.map("TButton",
-                  background=[('active', self.accent_color), ('!active', self.btn_bg)],
-                  foreground=[('active', '#ffffff'), ('!active', self.btn_fg)])
+                  background=[('active', colors["accent"]), ('!active', colors["btn_bg"])],
+                  foreground=[('active', '#ffffff'), ('!active', colors["btn_fg"])])
         
-        # Configure Progressbar
-        style.configure("TProgressbar", thickness=15, troughcolor="#2d2d2d", background=self.accent_color, bordercolor=self.bg_color)
+        style.configure("TProgressbar", thickness=15, troughcolor=colors["field_bg"], background=colors["accent"], bordercolor=colors["bg"])
         
-        # Configure Treeview (Connections Table)
         style.configure("Treeview", 
-                        background="#2d2d2d", 
-                        foreground=self.fg_color, 
-                        fieldbackground="#2d2d2d", 
+                        background=colors["tree_bg"], 
+                        foreground=colors["tree_fg"], 
+                        fieldbackground=colors["tree_bg"], 
                         rowheight=30,
                         font=("Segoe UI", 9))
-        style.map("Treeview", background=[('selected', self.accent_color)])
-        style.configure("Treeview.Heading", background="#333333", foreground=self.fg_color, font=("Segoe UI", 10, "bold"))
+        style.map("Treeview", background=[('selected', colors["tree_select"])])
+        style.configure("Treeview.Heading", background=colors["tree_heading_bg"], foreground=colors["fg"], font=("Segoe UI", 10, "bold"))
 
-    def handle_manager_update(self, msg_type, data):
-        self.gui_queue.put((msg_type, data))
+        # Update Listbox (not ttk)
+        for widget in root.winfo_children():
+            ThemeManager._update_widget_recursively(widget, colors)
 
-    def process_gui_queue(self):
+    @staticmethod
+    def _update_widget_recursively(widget, colors):
         try:
-            while True:
-                msg_type, data = self.gui_queue.get_nowait()
-                if msg_type == "log":
-                    self.log_message(data)
-                elif msg_type == "global_stats":
-                    self.update_dashboard(data)
-                elif msg_type == "connections":
-                    self.update_connection_table(data)
-                self.gui_queue.task_done()
-        except queue.Empty:
+            if isinstance(widget, tk.Listbox) or isinstance(widget, tk.Text):
+                widget.configure(bg=colors["field_bg"], fg=colors["fg"], highlightthickness=0, borderwidth=0)
+            
+            for child in widget.winfo_children():
+                ThemeManager._update_widget_recursively(child, colors)
+        except:
             pass
-        finally:
-            self.root.after(100, self.process_gui_queue)
 
-    def setup_ui(self):
-        # Configure main window grid weights for balance
-        self.root.columnconfigure(0, weight=1)
-        self.root.rowconfigure(4, weight=1) # Connections table
-        self.root.rowconfigure(5, weight=1) # Logs table
+class FolderCopierApp:
+    def __init__(self, root, initial_source=None):
+        self.root = root
+        self.root.title('SRE-Grade Folder Copier Pro')
+        self.root.geometry('900x750')
+        self.root.minsize(850, 650)
         
+        # Backend Components
+        self.executor_controller = CopyExecutorController()
+        self.queue_manager = self.executor_controller.manager
+        
+        # State
+        self.is_monitoring = True
+        self.current_theme = tk.StringVar(value="Midnight (Dark)")
+        
+        # Setup UI
+        self._create_widgets()
+        ThemeManager.apply_theme(self.root, self.current_theme.get())
+        
+        # Monitoring Thread
+        self.monitor_thread = threading.Thread(target=self._monitor_backend, daemon=True)
+        self.monitor_thread.start()
+        
+        if initial_source:
+            self.source_entry.insert(0, initial_source)
+
+        self.root.protocol('WM_DELETE_WINDOW', self._on_close)
+
+    def _create_widgets(self):
         # 1. Header & Global Status
-        header_frame = ttk.Frame(self.root)
-        header_frame.grid(row=0, column=0, sticky="ew", padx=20, pady=(20, 10))
-        header_frame.columnconfigure(1, weight=1)
+        header_frame = ttk.Frame(self.root, padding=20)
+        header_frame.pack(fill='x')
+        header_frame.columnconfigure(0, weight=1)
         
-        ttk.Label(header_frame, text="TRANSFER DASHBOARD", style="Header.TLabel").grid(row=0, column=0, sticky="w")
+        title_frame = ttk.Frame(header_frame)
+        title_frame.grid(row=0, column=0, sticky='w')
+        ttk.Label(title_frame, text="TRANSFER DASHBOARD", style="Header.TLabel").pack(side='left')
         
-        # Master Stats Frame (Symmetrical)
-        stats_frame = ttk.Frame(header_frame)
-        stats_frame.grid(row=1, column=0, columnspan=2, sticky="ew", pady=(10, 0))
-        for i in range(3): stats_frame.columnconfigure(i, weight=1)
+        # Theme Selector
+        theme_frame = ttk.Frame(header_frame)
+        theme_frame.grid(row=0, column=1, sticky='e')
+        ttk.Label(theme_frame, text="Theme:").pack(side='left', padx=5)
+        self.theme_combo = ttk.Combobox(theme_frame, textvariable=self.current_theme, 
+                                       values=list(ThemeManager.THEMES.keys()), state="readonly", width=15)
+        self.theme_combo.pack(side='left')
+        self.theme_combo.bind("<<ComboboxSelected>>", lambda e: ThemeManager.apply_theme(self.root, self.current_theme.get()))
+
+        # Stats Frame
+        self.stats_frame = ttk.Frame(header_frame, padding=(0, 20, 0, 10))
+        self.stats_frame.grid(row=1, column=0, columnspan=2, sticky='ew')
+        for i in range(4): self.stats_frame.columnconfigure(i, weight=1)
         
-        self.lbl_speed = ttk.Label(stats_frame, text="Speed: -- MB/s", font=("Segoe UI", 11, "bold"))
+        self.lbl_speed = ttk.Label(self.stats_frame, text="Speed: 0 B/s", style="Stat.TLabel")
         self.lbl_speed.grid(row=0, column=0)
         
-        self.lbl_eta = ttk.Label(stats_frame, text="ETA: --", font=("Segoe UI", 11))
-        self.lbl_eta.grid(row=0, column=1)
+        self.lbl_items_sec = ttk.Label(self.stats_frame, text="Items: 0.0/s", style="Stat.TLabel")
+        self.lbl_items_sec.grid(row=0, column=1)
         
-        self.lbl_items_sec = ttk.Label(stats_frame, text="Items: --/s", font=("Segoe UI", 11))
-        self.lbl_items_sec.grid(row=0, column=2)
-        
-        self.lbl_progress = ttk.Label(stats_frame, text="0 / 0 MB (0%)", font=("Segoe UI", 11))
-        self.lbl_progress.grid(row=0, column=3)
+        self.lbl_threads = ttk.Label(self.stats_frame, text="Threads: 0/4", style="Stat.TLabel")
+        self.lbl_threads.grid(row=0, column=2)
 
+        self.lbl_progress_text = ttk.Label(self.stats_frame, text="Progress: 0%", style="Stat.TLabel")
+        self.lbl_progress_text.grid(row=0, column=3)
+        
         self.main_progress = ttk.Progressbar(header_frame, mode='determinate')
-        self.main_progress.grid(row=2, column=0, columnspan=2, sticky="ew", pady=(10, 10))
+        self.main_progress.grid(row=2, column=0, columnspan=2, sticky='ew', pady=(10, 0))
 
-        # 2. Input Section (Symmetrical)
-        input_frame = ttk.LabelFrame(self.root, text=" Task Configuration ", padding=15)
-        input_frame.grid(row=1, column=0, sticky="ew", padx=20, pady=10)
+        # 2. Input Section
+        input_frame = ttk.LabelFrame(self.root, text=' Task Configuration ', padding=15)
+        input_frame.pack(fill='x', padx=20, pady=10)
         input_frame.columnconfigure(1, weight=1)
         
-        # Source Row
-        ttk.Label(input_frame, text="Source Path:").grid(row=0, column=0, sticky="w", padx=(0, 10))
-        self.src_entry = ttk.Entry(input_frame)
-        self.src_entry.grid(row=0, column=1, sticky="ew", pady=5)
-        ttk.Button(input_frame, text="Browse", width=10, command=self.sel_src).grid(row=0, column=2, padx=(10, 0))
+        ttk.Label(input_frame, text='Source Folder:').grid(row=0, column=0, sticky='w')
+        self.source_entry = ttk.Entry(input_frame)
+        self.source_entry.grid(row=0, column=1, sticky='ew', padx=10, pady=5)
+        ttk.Button(input_frame, text='Browse', command=self._browse_source).grid(row=0, column=2)
         
-        # Destination Row
-        ttk.Label(input_frame, text="Target Path:").grid(row=1, column=0, sticky="w", padx=(0, 10))
-        self.dst_entry = ttk.Entry(input_frame)
-        self.dst_entry.grid(row=1, column=1, sticky="ew", pady=5)
-        ttk.Button(input_frame, text="Browse", width=10, command=self.sel_dst).grid(row=1, column=2, padx=(10, 0))
-
-        # 3. Control Buttons (Centered)
-        ctrl_btn_frame = ttk.Frame(self.root)
-        ctrl_btn_frame.grid(row=2, column=0, pady=10)
+        ttk.Label(input_frame, text='Destination:').grid(row=1, column=0, sticky='w')
+        self.dest_entry = ttk.Entry(input_frame)
+        self.dest_entry.grid(row=1, column=1, sticky='ew', padx=10, pady=5)
+        ttk.Button(input_frame, text='Browse', command=self._browse_dest).grid(row=1, column=2)
         
-        ttk.Button(ctrl_btn_frame, text="ADD TO QUEUE", width=20, command=self.add_task).grid(row=0, column=0, padx=10)
-        self.btn_pause = ttk.Button(ctrl_btn_frame, text="PAUSE", width=20, command=self.toggle_pause)
-        self.btn_pause.grid(row=0, column=1, padx=10)
-        ttk.Button(ctrl_btn_frame, text="SAVE LOG REPORT", width=20, command=self.save_report).grid(row=0, column=2, padx=10)
-
-        # 4. Connection Table
-        conn_frame = ttk.LabelFrame(self.root, text=" Active Data Streams ", padding=10)
-        conn_frame.grid(row=4, column=0, sticky="nsew", padx=20, pady=5)
+        # 3. Actions Frame
+        action_frame = ttk.Frame(self.root, padding=5)
+        action_frame.pack(fill='x', padx=20)
         
-        cols = ("ID", "File", "Status", "Progress")
-        self.tree = ttk.Treeview(conn_frame, columns=cols, show='headings')
-        self.tree.heading("ID", text="#")
-        self.tree.column("ID", width=40, anchor="center")
-        self.tree.heading("File", text="File Name")
-        self.tree.column("File", width=400)
+        self.add_btn = ttk.Button(action_frame, text='ADD TO QUEUE', width=20, command=self._add_to_queue)
+        self.add_btn.pack(side='left', padx=5)
+        
+        self.pause_btn = ttk.Button(action_frame, text='PAUSE SYSTEM', width=20, command=self._toggle_pause)
+        self.pause_btn.pack(side='left', padx=5)
+        
+        # 4. Active Streams Table
+        streams_frame = ttk.LabelFrame(self.root, text=' Active Data Streams ', padding=10)
+        streams_frame.pack(fill='both', expand=True, padx=20, pady=10)
+        
+        cols = ("ID", "Status", "Progress")
+        self.tree = ttk.Treeview(streams_frame, columns=cols, show='headings', height=5)
+        self.tree.heading("ID", text="Worker Thread")
         self.tree.heading("Status", text="Status")
-        self.tree.column("Status", width=120, anchor="center")
         self.tree.heading("Progress", text="Progress")
-        self.tree.column("Progress", width=100, anchor="center")
-        
-        # Add Scrollbar to Treeview
-        tree_scroll = ttk.Scrollbar(conn_frame, orient="vertical", command=self.tree.yview)
-        self.tree.configure(yscrollcommand=tree_scroll.set)
-        self.tree.pack(side="left", fill="both", expand=True)
-        tree_scroll.pack(side="right", fill="y")
+        self.tree.pack(fill='both', expand=True)
 
-        # 5. Event Logs
-        log_frame = ttk.LabelFrame(self.root, text=" System Logs ", padding=10)
-        log_frame.grid(row=5, column=0, sticky="nsew", padx=20, pady=(5, 20))
+        # 5. Log Box
+        log_frame = ttk.LabelFrame(self.root, text=' System Audit Logs ', padding=10)
+        log_frame.pack(fill='both', expand=True, padx=20, pady=(0, 20))
         
-        self.log_box = tk.Listbox(log_frame, bg="#2d2d2d", fg=self.fg_color, font=("Consolas", 9), borderwidth=0, highlightthickness=0)
-        log_scroll = ttk.Scrollbar(log_frame, orient="vertical", command=self.log_box.yview)
-        self.log_box.configure(yscrollcommand=log_scroll.set)
-        
-        self.log_box.pack(side="left", fill="both", expand=True)
-        log_scroll.pack(side="right", fill="y")
+        self.log_box = tk.Listbox(log_frame, font=('Consolas', 9))
+        self.log_box.pack(fill='both', expand=True)
 
-    def update_dashboard(self, stats):
-        self.lbl_speed.config(text=f"Speed: {format_bytes(stats['speed'])}/s")
-        self.lbl_items_sec.config(text=f"Items: {stats['items_speed']:.1f}/s")
-        self.lbl_eta.config(text=f"ETA: {format_time(stats['eta'])}")
-        
-        prog_str = f"{format_bytes(stats['bytes_copied'])} / {format_bytes(stats['total_bytes'])}"
-        file_stats = f"Files: {stats['files_done']} / {stats['total_files']}"
-        self.lbl_progress.config(text=f"{prog_str} | {file_stats} ({stats['percentage']:.1f}%)")
-        self.main_progress['value'] = stats['percentage']
-
-    def update_connection_table(self, worker_data):
-        """Optimized update-in-place to prevent UI lag."""
-        for wid, data in worker_data.items():
-            values = (
-                wid,
-                data['file'],
-                data['status'],
-                f"{data['progress']:.1f}%"
-            )
+    def _browse_source(self):
+        p = filedialog.askdirectory(); p and self.source_entry.delete(0, tk.END) or self.source_entry.insert(0, p)
+    def _browse_dest(self):
+        p = filedialog.askdirectory(); p and self.dest_entry.delete(0, tk.END) or self.dest_entry.insert(0, p)
             
-            if wid in self.worker_to_item:
-                item_id = self.worker_to_item[wid]
-                self.tree.item(item_id, values=values)
-            else:
-                item_id = self.tree.insert("", "end", values=values)
-                self.worker_to_item[wid] = item_id
-
-    def sel_src(self):
-        p = filedialog.askdirectory()
-        if p:
-            self.src_entry.delete(0, tk.END); self.src_entry.insert(0, p)
-    def sel_dst(self):
-        p = filedialog.askdirectory()
-        if p:
-            self.dst_entry.delete(0, tk.END); self.dst_entry.insert(0, p)
-
-    def log_message(self, msg):
-        self.log_box.insert(tk.END, f"[{format_time(0)[-1]*0}{' '+msg}]" if False else f" {msg}") # Simplified
-        # Real logic:
-        self.log_box.insert(tk.END, f" > {msg}")
-        self.log_box.yview(tk.END)
-
-    def add_task(self):
-        src, dst = self.src_entry.get(), self.dst_entry.get()
-        if not os.path.isdir(src) or not dst:
-            messagebox.showwarning("Incomplete Input", "Please select valid source and destination folders.")
+    def _add_to_queue(self):
+        src, dst = self.source_entry.get(), self.dest_entry.get()
+        if not src or not dst:
+            messagebox.showerror('Error', 'Source and Destination required!')
             return
-            
-        self.manager.enqueue_task(src, dst)
-        self.src_entry.delete(0, tk.END)
-        self.dst_entry.delete(0, tk.END)
-
-    def toggle_pause(self):
-        if self.manager.pause_event.is_set():
-            self.manager.resume()
-            self.btn_pause.config(text="PAUSE")
+        success, msg = self.queue_manager.add_task(src, dst, 'copy')
+        if success:
+            self._log(f'QUEUED: {src}')
+            if self.queue_manager.get_state() == 'IDLE':
+                self.executor_controller.start()
         else:
-            self.manager.pause()
-            self.btn_pause.config(text="RESUME")
+            self._log(f'IGNORED: {msg}')
+            
+    def _toggle_pause(self):
+        state = self.queue_manager.get_state()
+        if state == 'PAUSED':
+            self.queue_manager.set_state('RUNNING')
+            self._log('COMMAND: System Resumed')
+        else:
+            self.queue_manager.set_state('PAUSED')
+            self._log('COMMAND: System Paused')
 
-    def save_report(self):
-        report = generate_report_content(self.manager)
-        f = filedialog.asksaveasfilename(defaultextension=".txt", 
-                                       filetypes=[("Text Files", "*.txt")],
-                                       initialfile=f"diag_report_{int(os.path.getsize('folder_copier_debug.log')) if os.path.exists('folder_copier_debug.log') else 0}.txt")
-        if f:
+    def _monitor_backend(self):
+        while self.is_monitoring:
             try:
-                with open(f, 'w') as file:
-                    file.write(report)
-                messagebox.showinfo("Report Exported", f"Diagnostic report saved to:\n{f}")
-                logger.info(f"Report saved to {f}")
+                msg_type, data = self.queue_manager.progress_channel.get(timeout=0.1)
+                self.root.after(0, self._process_backend_message, msg_type, data)
+            except queue.Empty:
+                continue
             except Exception as e:
-                messagebox.showerror("Export Error", f"Failed to save report: {e}")
-                logger.error(f"Failed to save report: {e}")
+                logger.error(f'Monitor Error: {e}')
 
-if __name__ == "__main__":
+    def _process_backend_message(self, msg_type, data):
+        if msg_type == 'STATE_CHANGE':
+            self.pause_btn.config(text='RESUME SYSTEM' if data == 'PAUSED' else 'PAUSE SYSTEM')
+            self._log(f"STATE: {data}")
+        elif msg_type == 'METRICS_UPDATE':
+            self.lbl_speed.config(text=f"Speed: {format_bytes(data['byte_rate'])}/s")
+            self.lbl_items_sec.config(text=f"Items: {data['item_rate']:.1f}/s")
+            self.lbl_threads.config(text=f"Threads: {data['active_threads']}/{data['total_threads']}")
+            
+            # Update Treeview with real thread usage
+            self.tree.delete(*self.tree.get_children())
+            for i in range(data['active_threads']):
+                self.tree.insert("", "end", values=(f"Thread-{i+1}", "ACTIVE", "Processing..."))
+            for i in range(data['active_threads'], data['total_threads']):
+                self.tree.insert("", "end", values=(f"Thread-{i+1}", "IDLE", "--"))
+
+        elif msg_type == 'OP_PROGRESS':
+            if data[1] > 0:
+                pct = (data[0] / data[1]) * 100
+                self.main_progress['value'] = pct
+                self.lbl_progress_text.config(text=f"Progress: {pct:.1f}%")
+        elif msg_type == 'LOG':
+            self._log(data)
+
+    def _log(self, msg):
+        self.log_box.insert(tk.END, f" > {msg}")
+        self.log_box.see(tk.END)
+
+    def _on_close(self):
+        if messagebox.askokcancel('Quit', 'Stop all operations and quit?'):
+            self.is_monitoring = False
+            self.executor_controller.stop()
+            self.root.destroy()
+            sys.exit(0)
+
+if __name__ == '__main__':
     root = tk.Tk()
-    app = FolderCopierApp(root)
+    app = FolderCopierApp(root, sys.argv[1] if len(sys.argv) > 1 else None)
     root.mainloop()

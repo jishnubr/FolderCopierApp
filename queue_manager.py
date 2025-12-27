@@ -1,0 +1,185 @@
+import threading
+import hashlib
+import time
+import queue
+
+class QueueManager:
+    """
+    Manages the operational state (IDLE, PAUSED, RUNNING) and the thread-safe task queue.
+    Implements operation fingerprinting for idempotency checks.
+    """
+    STATE_IDLE = "IDLE"
+    STATE_PAUSED = "PAUSED"
+    STATE_RUNNING = "RUNNING"
+
+    def __init__(self):
+        # State management
+        self.state = self.STATE_IDLE
+        self._lock = threading.Lock()
+
+        # Data structures
+        self.task_queue = queue.Queue()
+        self.fingerprint_set = set()  # Stores unique hashes of tasks already queued/processed
+
+        # Communication channel for workers to report back to the main thread/GUI
+        self.progress_channel = queue.Queue()
+        self.current_operation = None
+
+        # SRE Metrics
+        self.total_bytes_processed = 0
+        self.total_items_completed = 0
+
+    def _generate_fingerprint(self, source: str, destination: str, op_type: str) -> str:
+        """Generates a deterministic hash for an operation."""
+        data = f"{source}|{destination}|{op_type}"
+        return hashlib.sha256(data.encode('utf-8')).hexdigest()
+
+    def add_task(self, source: str, destination: str, op_type: str = "COPY") -> tuple[bool, str]:
+        """Adds a task if it's not a duplicate."""
+        fp = self._generate_fingerprint(source, destination, op_type)
+
+        with self._lock:
+            if fp in self.fingerprint_set:
+                # Idempotency check successful: Task already queued or processed
+                msg = f"Idempotent task skipped: {source} -> {destination}"
+                self.progress_channel.put(("LOG", msg))
+                return False, msg
+
+            task_data = {"fp": fp, "source": source, "destination": destination, "type": op_type}
+            self.task_queue.put(task_data)
+            self.fingerprint_set.add(fp)
+            self.progress_channel.put(("QUEUE_UPDATE", len(self.task_queue.queue)))
+            msg = f"Task added: {source}"
+            self.progress_channel.put(("LOG", msg))
+
+            # If currently IDLE and a task is added, we remain IDLE as per design (no auto-start)
+            return True, msg
+
+    def pause(self) -> bool:
+        """Transitions state to PAUSED, respecting transition rules."""
+        with self._lock:
+            if self.state == self.STATE_RUNNING:
+                self.state = self.STATE_PAUSED
+                self.progress_channel.put(("STATE_CHANGE", self.STATE_PAUSED))
+                self.progress_channel.put(("LOG", "Operation Paused."))
+                return True
+            return False
+
+    def resume(self) -> bool:
+        """Transitions state to RUNNING, respecting transition rules."""
+        with self._lock:
+            if self.state == self.STATE_PAUSED:
+                self.state = self.STATE_RUNNING
+                self.progress_channel.put(("STATE_CHANGE", self.STATE_RUNNING))
+                self.progress_channel.put(("LOG", "Operation Resumed."))
+                # Note: The worker loop must check this state change
+                return True
+            elif self.state == self.STATE_IDLE:
+                # Per design: Transitioning from IDLE to RUNNING only happens if the worker loop is active
+                # However, if the worker loop hasn't been started yet (no tasks submitted), we rely on the main loop to start it later.
+                # For simplicity here, we transition RUNNING if the queue has items and we weren't PAUSED.
+                if not self.task_queue.empty():
+                    self.state = self.STATE_RUNNING
+                    self.progress_channel.put(("STATE_CHANGE", self.STATE_RUNNING))
+                    self.progress_channel.put(("LOG", "Operation Started (from IDLE state)."))
+                    return True
+            return False
+
+    def get_next_task(self):
+        """Safely retrieves the next task and checks state."""
+        with self._lock:
+            if self.state == self.STATE_IDLE:
+                return None
+            
+            if self.state == self.STATE_PAUSED:
+                # Worker pauses execution until state changes
+                return "PAUSE_BLOCKER"
+
+            if self.task_queue.empty():
+                self.state = self.STATE_IDLE
+                self.progress_channel.put(("STATE_CHANGE", self.STATE_IDLE))
+                self.progress_channel.put(("LOG", "Queue empty. Operation complete."))
+                return None
+            
+            # State is RUNNING and queue is not empty
+            task = self.task_queue.get()
+            self.current_operation = task['fp']
+            return task
+
+    def task_complete(self, fp: str, bytes_count: int = 0):
+        """Called by worker after successful processing."""
+        with self._lock:
+            if self.current_operation == fp:
+                self.current_operation = None
+                self.total_items_completed += 1
+                self.total_bytes_processed += bytes_count
+                
+                self.progress_channel.put(("TASK_DONE", fp))
+                self.progress_channel.put(("QUEUE_UPDATE", len(self.task_queue.queue)))
+                
+                # Important: Re-check state after completion (might revert to IDLE/PAUSED)
+                if self.state == self.STATE_RUNNING and self.task_queue.empty():
+                    self.state = self.STATE_IDLE
+                    self.progress_channel.put(("STATE_CHANGE", self.STATE_IDLE))
+                    self.progress_channel.put(("LOG", "Queue empty. Operation complete."))
+
+    def get_status(self):
+        with self._lock:
+            return self.state, len(self.task_queue.queue)
+
+    def get_state(self):
+        with self._lock:
+            return self.state
+
+    def set_state(self, new_state):
+        """Allows GUI to force state transitions."""
+        if new_state == self.STATE_PAUSED:
+            self.pause()
+        elif new_state == self.STATE_RUNNING:
+            self.resume()
+        elif new_state == self.STATE_IDLE:
+            with self._lock:
+                self.state = self.STATE_IDLE
+                self.progress_channel.put(("STATE_CHANGE", self.STATE_IDLE))
+
+# --- Worker Function (Simulating CopyManager Refactor) ---
+
+def worker_thread_task(manager: QueueManager):
+    """The main loop executed by each worker thread."""
+    while True:
+        task = manager.get_next_task()
+
+        if task is None:
+            # Queue empty, worker terminates naturally if we exit the loop
+            if manager.state == manager.STATE_IDLE:
+                break
+            # If state is RUNNING but queue just became empty, it will transition to IDLE on the next check.
+            time.sleep(0.1) # Yield while checking state transition
+            continue
+
+        if task == "PAUSE_BLOCKER":
+            time.sleep(0.1) # Yield execution while paused
+            continue
+
+        # --- Actual Work Execution ---
+        
+        fp = task['fp']
+        
+        manager.progress_channel.put(("OP_START", (fp, 1, 0))) # Notify start: current item, total progress=0/1 (placeholder)
+        
+        # Simulate intensive file operation (IO Bound simulation)
+        print(f"[Worker] Processing {task['source']}...")
+        simulated_size = 10 * 1024 * 1024 # 10MB
+        time.sleep(1.0) # Simulating work
+
+        # Simulate granular progress reporting (optional, but good practice)
+        manager.progress_channel.put(("OP_PROGRESS", (50, 100)))
+        time.sleep(1.0)
+        
+        print(f"[Worker] Finished {task['source']}")
+        manager.progress_channel.put(("OP_PROGRESS", (100, 100)))
+        
+        # Signal completion back to the manager (which handles state transitions)
+        manager.task_complete(fp, bytes_count=simulated_size)
+        
+        # After completion, the loop immediately checks for the next task/state
